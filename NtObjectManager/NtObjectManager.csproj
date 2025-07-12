@@ -1,0 +1,205 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyName>NtObjectManager</AssemblyName>
+        <TargetFramework>net461</TargetFramework>
+        <Authors>James Forshaw</Authors>
+        <Company>Google LLC.</Company>
+        <Product>NtObjectManager</Product>
+        <FileVersion>2.0.0.0</FileVersion>
+        <Version>2.0.0</Version>
+        <Copyright>Copyright © Google LLC. 2016-2023</Copyright>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <LangVersion>10.0</LangVersion>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <BaseOutputPath>..\bin</BaseOutputPath>
+        <Configurations>Debug;Release;Publish</Configurations>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Publish|AnyCPU'">
+      <Optimize>True</Optimize>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="BuildTools\**" />
+      <EmbeddedResource Remove="BuildTools\**" />
+      <None Remove="BuildTools\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="AppModelFunctions.ps1" />
+        <None Remove="DsFunctions.ps1" />
+        <None Remove="en-US\about_ManagingNtObjectLifetime.help.txt" />
+        <None Remove="en-US\about_NtObjectManagerProvider.help.txt" />
+        <None Remove="FirewallFunctions.ps1" />
+        <None Remove="Formatters.ps1xml" />
+        <None Remove="KerberosFunctions.ps1" />
+        <None Remove="LsaFunctions.ps1" />
+        <None Remove="MiscFunctions.ps1" />
+        <None Remove="NtDeviceFunctions.ps1" />
+        <None Remove="NtFileFunctions.ps1" />
+        <None Remove="NtKeyFunctions.ps1" />
+        <None Remove="NtObjectFunctions.ps1" />
+        <None Remove="NtObjectManager.psd1" />
+        <None Remove="NtObjectManager.psm1" />
+        <None Remove="NtProcessFunctions.ps1" />
+        <None Remove="NtSectionFunctions.ps1" />
+        <None Remove="NtSecurityFunctions.ps1" />
+        <None Remove="NtSystemInfoFunctions.ps1" />
+        <None Remove="NtThreadFunctions.ps1" />
+        <None Remove="NtTokenFunctions.ps1" />
+        <None Remove="NtVirtualMemoryFunctions.ps1" />
+        <None Remove="NtWindowFunctions.ps1" />
+        <None Remove="RpcFunctions.ps1" />
+        <None Remove="SamFunctions.ps1" />
+        <None Remove="SocketFunctions.ps1" />
+        <None Remove="TypeExtensions.ps1xml" />
+        <None Remove="UtilityFunctions.ps1" />
+        <None Remove="Win32DebugFunctions.ps1" />
+        <None Remove="Win32ModuleFunctions.ps1" />
+        <None Remove="Win32ProcessFunctions.ps1" />
+        <None Remove="Win32SecurityFunctions.ps1" />
+        <None Remove="Win32ServiceFunctions.ps1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <COMReference Include="TaskScheduler">
+            <WrapperTool>tlbimp</WrapperTool>
+            <VersionMinor>0</VersionMinor>
+            <VersionMajor>1</VersionMajor>
+            <Guid>e34cb9f1-c7f7-424c-be29-027dcc09363a</Guid>
+            <Lcid>0</Lcid>
+            <Isolated>false</Isolated>
+            <EmbedInteropTypes>true</EmbedInteropTypes>
+        </COMReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="AppModelFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="DsFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="en-US\about_ManagingNtObjectLifetime.help.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="en-US\about_NtObjectManagerProvider.help.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="FirewallFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Formatters.ps1xml">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="KerberosFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="LsaFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="MiscFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtDeviceFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtFileFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtKeyFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtObjectFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtObjectManager.psd1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtObjectManager.psm1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtProcessFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtSectionFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtSecurityFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtSystemInfoFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtThreadFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtTokenFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtVirtualMemoryFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="NtWindowFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="RpcFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="SamFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="SocketFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="TypeExtensions.ps1xml">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="UtilityFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Win32DebugFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Win32ModuleFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Win32ProcessFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Win32SecurityFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Win32ServiceFunctions.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="PowerShellStandard.Library" Version="5.1.1" />
+        <PackageReference Include="XmlDoc2CmdletDoc" Version="0.3.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="System.DirectoryServices" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)' != 'Publish'">
+        <ProjectReference Include="..\NtCoreLib\NtCoreLib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Configuration)' == 'Publish'">
+        <Compile Include="..\NtCoreLib\**\*.cs" LinkBase="NtCoreLib" />
+        <Compile Remove="..\NtCoreLib\obj\**" />
+        <Reference Include="System.Security" />
+    </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Publish'">
+      <Exec Command="powershell.exe -ExecutionPolicy Bypass BuildTools\merge_script.ps1 -Path '$(OutputPath)' -RemoveSource" />
+    </Target>
+</Project>
