@@ -158,3 +158,6 @@ For more information on this phase, check [Import-DataToNeo4j](/docs/3%20Analysi
 
 ## Known bugs
 - None at the moment
+
+## Acknowledgement
+This tool is heavily built upon [NtObjectManager](https://www.powershellgallery.com/packages/NtObjectManager) by [James Forshaw](https://x.com/tiraniddo) with [Google Project Zero](https://googleprojectzero.blogspot.com/). This tool uses the NtObjectManager module to do most tasks.
