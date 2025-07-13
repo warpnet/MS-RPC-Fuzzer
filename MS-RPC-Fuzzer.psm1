@@ -12,6 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+$WarningPreference = 'SilentlyContinue'
+
 # Import NtObjectManager
 Import-Module "$PSScriptRoot\NtObjectManager\NtObjectManager.psm1"
 
@@ -28,3 +30,7 @@ Import-Module "$PSScriptRoot\NtObjectManager\NtObjectManager.psm1"
 . "$PSScriptRoot\source\SortProcedureFunction.ps1"
 . "$PSScriptRoot\source\DefaultFuzzer.ps1"
 . "$PSScriptRoot\source\SortedFuzzer.ps1"
+
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    Write-Host "[!] PowerShell version 7 is required for MS-RPC Fuzzer" -ForegroundColor Red
+}
