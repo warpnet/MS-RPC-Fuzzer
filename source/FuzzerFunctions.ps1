@@ -283,7 +283,7 @@ Function Format-SortedParameterType {
                 }
             }
             if ($match) {
-                return $($match.Value)
+                return $($match.Value[-1])
             } else {
                 return [System.Activator]::CreateInstance($Type)
             }
