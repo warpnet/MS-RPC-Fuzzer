@@ -148,8 +148,8 @@ function Invoke-SortedFuzzer {
             # Loop over all stringbindings for the RPC interface
             foreach ($stringbinding in $stringBindings) {
                 # Connect the RPC client
-                ConnectRpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
-        
+                Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT    
+                
                 # Get methods for the RPC interface
                 if ($Procedure) {
                     # User only wants to fuzz one specific procedure

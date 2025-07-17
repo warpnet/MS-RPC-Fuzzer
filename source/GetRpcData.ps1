@@ -197,7 +197,11 @@ function Get-RpcServerData {
                     } else {
                         # For other types of endpoints, use the stringBinding directly
                         Connect-RpcClient $client -stringBinding $endpoint
-                        $tempstringbinding = $client.ProtocolSequence + ":[$($client.Endpoint)]"
+                        if ($client.ProtocolSequence -eq "ncacn_ip_tcp") {
+                            $tempstringbinding = $endpoint
+                        } else {
+                            $tempstringbinding = $client.ProtocolSequence + ":[$($client.Endpoint)]" 
+                        }
                         $stringbinding = $tempstringbinding.Replace("\RPC Control\","")
                         $stringBindings += $stringbinding
                     }
