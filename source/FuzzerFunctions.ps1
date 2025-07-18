@@ -52,6 +52,8 @@ function Invoke-RpcFuzzer {
         [string]$canary  = "incendiumrocks_",
         [string]$OutPath,
         [string]$StringInput,
+        [Int32]$intInput,
+        [guid]$guidInput,
         $inputParameters,
         $minStrLen = 5,
         $maxStrLen = 20,
@@ -69,9 +71,9 @@ function Invoke-RpcFuzzer {
 
     # Call the fuzzer with the user specified options
     if ($FuzzerType -eq "sorted") {
-        Invoke-SortedFuzzer -JsonFilePath $rpcServerData -Iterations $iterations -Canary $Canary -Mode $mode -remote_host $remote_host -OutPath $OutPath -StringInput $StringInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -inputParameters $inputParameters -Procedure $Procedure -Blacklist $Blacklist -DbgHelpPath $DbgHelpPath
+        Invoke-SortedFuzzer -JsonFilePath $rpcServerData -Iterations $iterations -Canary $Canary -Mode $mode -remote_host $remote_host -OutPath $OutPath -StringInput $StringInput -IntInput $intInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -inputParameters $inputParameters -Procedure $Procedure -Blacklist $Blacklist -DbgHelpPath $DbgHelpPath
     } else {
-        Invoke-DefaultFuzzer -JsonFilePath $rpcServerData -Iterations $iterations -Canary $Canary -Mode $mode -remote_host $remote_host -OutPath $OutPath -StringInput $StringInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -inputParameters $inputParameters -Procedure $Procedure -Blacklist $Blacklist -DbgHelpPath $DbgHelpPath
+        Invoke-DefaultFuzzer -JsonFilePath $rpcServerData -Iterations $iterations -Canary $Canary -Mode $mode -remote_host $remote_host -OutPath $OutPath -StringInput $StringInput -IntInput $intInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -inputParameters $inputParameters -Procedure $Procedure -Blacklist $Blacklist -DbgHelpPath $DbgHelpPath
     }
 }
 
@@ -90,6 +92,8 @@ Function Format-ParameterType {
         $remote_host,
         $inputParameters,
         $StringInput,
+        $IntInput,
+        $GuidInput,
         $minStrLen = 5,
         $maxStrLen = 20,
         $minIntSize = 10,
@@ -109,8 +113,9 @@ Function Format-ParameterType {
         elseif ($Type.IsArray) {
             # [Recursive] Array
             return ,@(Format-ParameterType $Type.GetElementType())
+        } 
         # Is param type an String?
-        } elseif ($Type -eq [System.String]) {
+        elseif ($Type -eq [System.String]) {
             if ($StringInput) {
                 $value = $StringInput
             } else {
@@ -124,12 +129,20 @@ Function Format-ParameterType {
             return $value
         # Is param type an Int32?
         } elseif ($Type -eq [System.Int32]) {
-            $value = CallInputGenerator -param $Type -canary $Canary -minIntSize $minIntSize -maxIntSize $maxIntSize
-            return [int32]$value
-        # Is param type and Byte?
+            if ($IntInput) {
+                $value = $IntInput
+                return [int32]$value
+            } else {
+                $value = CallInputGenerator -param $Type -canary $Canary -minIntSize $minIntSize -maxIntSize $maxIntSize
+                return [int32]$value
+            }
+        # Is param type an Byte?
         } elseif ($Type -eq [System.Byte]) {
             # Default Byte value
             [System.Byte]0x41
+        # Is param type an guid and did user provide a guid?           
+        } elseif ($Type -eq [System.Guid] -and $GuidInput) {
+            [System.Guid]$GuidInput
         }
         # Did the user specify his own parameters?
         elseif ($inputParameters) {
@@ -158,6 +171,8 @@ Function Format-DefaultParameters {
         $remote_host,
         $inputParameters,
         $StringInput,
+        $IntInput,
+        $GuidInput,        
         $minStrLen = 5,
         $maxStrLen = 20,
         $minIntSize = 10,
@@ -169,7 +184,7 @@ Function Format-DefaultParameters {
     process {
         $Method.GetParameters() | ForEach-Object {
             $parameter = $_
-            $value = Format-ParameterType -Type $parameter.ParameterType -Mode $Mode -remote_host $remote_host -canary $Canary -StringInput $StringInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -inputParameters $inputParameters
+            $value = Format-ParameterType -Type $parameter.ParameterType -Mode $Mode -remote_host $remote_host -canary $Canary -StringInput $StringInput -IntInput $intInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -inputParameters $inputParameters
             return ,$value
         }
     }
@@ -226,6 +241,8 @@ Function Format-SortedParameterType {
         $remote_host,
         $inputParameters,
         $StringInput,
+        $IntInput,
+        $GuidInput,
         $minStrLen = 5,
         $maxStrLen = 20,
         $minIntSize = 10,
@@ -247,7 +264,7 @@ Function Format-SortedParameterType {
         elseif ($Type.IsArray) {
             # [Recursive] Array
             # When recursively calling, ensure InterfaceComplexParameters is passed down
-            return ,@(Format-SortedParameterType -Type $Type.GetElementType() -Canary $Canary -Mode $Mode -remote_host $remote_host -inputParameters $inputParameters -StringInput $StringInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -InterfaceComplexParameters $InterfaceComplexParameters)
+            return ,@(Format-SortedParameterType -Type $Type.GetElementType() -Canary $Canary -Mode $Mode -remote_host $remote_host -inputParameters $inputParameters -StringInput $StringInput -IntInput $intInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -InterfaceComplexParameters $InterfaceComplexParameters)
         # Is param type an String?
         } elseif ($Type -eq [System.String]) {
             if ($StringInput) {
@@ -263,12 +280,20 @@ Function Format-SortedParameterType {
             return $value
         # Is param type an Int32?
         } elseif ($Type -eq [System.Int32]) {
-            $value = CallInputGenerator -param $Type -canary $Canary -minIntSize $minIntSize -maxIntSize $maxIntSize
-            return [int32]$value
-        # Is param type and Byte?
+            if ($IntInput) {
+                $value = $IntInput
+                return [int32]$value
+            } else {
+                $value = CallInputGenerator -param $Type -canary $Canary -minIntSize $minIntSize -maxIntSize $maxIntSize
+                return [int32]$value
+            }
+        # Is param type an Byte?
         } elseif ($Type -eq [System.Byte]) {
             # Default Byte value
             [System.Byte]0x41
+        # Is param type an guid and did user provide a guid?           
+        } elseif ($Type -eq [System.Guid] -and $GuidInput) {
+            [System.Guid]$GuidInput
         }
         # Check if it's a complex type that might be stored
         elseif (Test-IsComplexType $Type) {
@@ -290,7 +315,7 @@ Function Format-SortedParameterType {
         }
         # Did the user specify his own parameters? (Less priority now that we have InterfaceComplexParameters)
         elseif ($inputParameters) {
-            Write-Verbose "  Format-SortedParameterType: Using '$inputParameters' which is not the primary mechanism for complex types now. Consider using InterfaceComplexParameters."
+            Write-Verbose "  Format-SortedParameterType: Using '$inputParameters' which is not the primary mechanism for complex types now."
             return $inputParameters
             
         # None of the above, dynamically create an instance for the parameter
@@ -315,6 +340,8 @@ Function Format-SortedDefaultParameters {
         $remote_host,
         $inputParameters,
         $StringInput,
+        $IntInput,
+        $GuidInput,
         $minStrLen = 5,
         $maxStrLen = 20,
         $minIntSize = 10,
@@ -327,7 +354,7 @@ Function Format-SortedDefaultParameters {
     # Process each parameter in a method (RPC procedure)
     $formattedParams = @()
     foreach ($parameter in $Method.GetParameters()) {
-        $value = Format-SortedParameterType -Type $parameter.ParameterType -Mode $Mode -remote_host $remote_host -canary $Canary -StringInput $StringInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -inputParameters $inputParameters -InterfaceComplexParameters $InterfaceComplexParameters
+        $value = Format-SortedParameterType -Type $parameter.ParameterType -Mode $Mode -remote_host $remote_host -canary $Canary -StringInput $StringInput -IntInput $intInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -inputParameters $inputParameters -InterfaceComplexParameters $InterfaceComplexParameters
         $formattedParams += [PSCustomObject]@{
             Name = $parameter.Name
             Type = $parameter.ParameterType.FullName

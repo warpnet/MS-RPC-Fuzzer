@@ -35,6 +35,8 @@ function Invoke-SortedFuzzer {
             [Parameter(Mandatory=$true)]
             $OutPath,
             $StringInput,
+            $intInput,
+            $guidInput,            
             $inputParameters,
             $minStrLen,
             $maxStrLen,
@@ -148,8 +150,15 @@ function Invoke-SortedFuzzer {
             # Loop over all stringbindings for the RPC interface
             foreach ($stringbinding in $stringBindings) {
                 # Connect the RPC client
-                Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT    
-                
+                try {
+                    Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
+                } catch {
+                    try {
+                        Connect-RpcClient -client $client -stringBinding $stringbinding
+                    } catch {
+                        Write-Verbose "[!] Could not connect client to $stringbinding : $_"
+                    }
+                }
                 # Get methods for the RPC interface
                 if ($Procedure) {
                     # User only wants to fuzz one specific procedure
@@ -182,7 +191,7 @@ function Invoke-SortedFuzzer {
 
                             # Loop through each parameter in the method's parameter types
                             # Pass the InterfaceComplexParameters to Format-SortedDefaultParameters
-                            $params = Format-SortedDefaultParameters -Method $Method -Mode $Mode -remote_host $remote_host -canary $Canary -inputParameters $inputParameters -StringInput $StringInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -InterfaceComplexParameters $ComplexList
+                            $params = Format-SortedDefaultParameters -Method $Method -Mode $Mode -remote_host $remote_host -canary $Canary -inputParameters $inputParameters -StringInput $StringInput -IntInput $intInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -InterfaceComplexParameters $ComplexList
 
                             try {
                                 $RpcInterface = $Client.InterfaceId.Uuid

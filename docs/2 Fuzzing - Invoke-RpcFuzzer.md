@@ -8,10 +8,10 @@ NAME
 
 SYNTAX
     Invoke-RpcFuzzer [[-DataFile] <String>] [[-Mode] <String>] [[-iterations] <String>] [[-remote_host] <String>]
-    [[-canary] <String>] [[-OutPath] <String>] [[-StringInput] <String>] [[-inputParameters] <Object>] [[-minStrLen]
-    <Object>] [[-maxStrLen] <Object>] [[-minIntSize] <Object>] [[-maxIntSize] <Object>] [[-minByteArrLen] <Object>]
-    [[-maxByteArrLen] <Object>] [[-Procedure] <Object>] [[-Blacklist] <Object>] [[-FuzzerType] <String>] [[-DbgHelpPath] <string>]
-    [<CommonParameters>]
+    [[-canary] <String>] [[-OutPath] <String>] [[-StringInput] <String>] [[-intInput] <Int32>] [[-guidInput] <Guid>]
+    [[-inputParameters] <Object>] [[-minStrLen] <Object>] [[-maxStrLen] <Object>] [[-minIntSize] <Object>]
+    [[-maxIntSize] <Object>] [[-minByteArrLen] <Object>] [[-maxByteArrLen] <Object>] [[-Procedure] <Object>]
+    [[-Blacklist] <Object>] [[-FuzzerType] <String>] [[-DbgHelpPath] <String>] [<CommonParameters>]
 
 OPTIONS
     -DataFile               The path to rpcServerData.json (path can also be piped)
@@ -22,6 +22,8 @@ OPTIONS
     -OutPath                Path to export fuzzing data to
     -InputParameters        Parse complex type parameters to the fuzzer (see examples below)
     -StringInput            Parse your own value for string parameters (for example a existing file)
+    -intInput               Parse your own int32 value for integer values
+    -guidInput              Parse your own guid value for guid values
     -minStrLen              The minimal length for a string when generating fuzz data (default 5)
     -maxStrLen              The maximal length for a string when generating fuzz data (default 20)
     -minIntSize             The minimal integer size when generating fuzz data (default 10)
@@ -98,4 +100,10 @@ Specify your own string value. This can be useful to see what a RPC procedure do
 Specify a specific procedure to fuzz with minimal and maximal string lengths
 ```powershell
 PS '.\output\rpcServerData.json' | Invoke-RpcFuzzer -outpath .\output\ -Procedure EdpRpcRmsDecontainerizeFile -minStrLen 100 -maxStrLen 1000
+```
+
+Specify your own integer and guid as parameters for fuzzing input
+```powershell
+$myguid = New-Guid
+PS '.\output\rpcServerData.json' | Invoke-RpcFuzzer -outpath .\output\ -Procedure EdpRpcRmsDecontainerizeFile -intInput 1337 -guidInput $myguid
 ```

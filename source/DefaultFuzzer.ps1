@@ -35,6 +35,8 @@ function Invoke-DefaultFuzzer {
             [Parameter(Mandatory=$true)]
             $OutPath,
             $StringInput,
+            $intInput,
+            $guidInput,            
             $inputParameters,
             $minStrLen,
             $maxStrLen,
@@ -141,8 +143,15 @@ function Invoke-DefaultFuzzer {
             # Loop over all stringbindings for the RPC interface
             foreach ($stringbinding in $stringBindings) {
                 # Connect the RPC client
-                Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
-
+                try {
+                    Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
+                } catch {
+                    try {
+                        Connect-RpcClient -client $client -stringBinding $stringbinding
+                    } catch {
+                        Write-Verbose "[!] Could not connect client to $stringbinding : $_"
+                    }
+                }
                 # Get methods for the RPC interface
                 if ($Procedure) {
                     # User only wants to fuzz one specific procedure
@@ -169,7 +178,7 @@ function Invoke-DefaultFuzzer {
                         # Loop trough number of iterations (for the input of parameters)
                         for ($i = 0; $i -lt $Iterations; $i++) {
                             # Loop through each parameter in the method's parameter types
-                            $params = Format-DefaultParameters -Method $Method -Mode $Mode -remote_host $remote_host -canary $Canary -inputParameters $inputParameters -StringInput $StringInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen
+                            $params = Format-DefaultParameters -Method $Method -Mode $Mode -remote_host $remote_host -canary $Canary -inputParameters $inputParameters -StringInput $StringInput -IntInput $intInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen
                             # TODO: Look if method needs complex parameter that another procedure in the same interface outputs.
                             # TODO: If so, first call that other procedure (first one that outputs it) and store its output parameter
                             # TODO: Next, call our initial method with the output parameter as input parameter
