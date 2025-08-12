@@ -11,7 +11,7 @@ SYNTAX
     [[-canary] <String>] [[-OutPath] <String>] [[-StringInput] <String>] [[-intInput] <Int32>] [[-guidInput] <Guid>]
     [[-inputParameters] <Object>] [[-minStrLen] <Object>] [[-maxStrLen] <Object>] [[-minIntSize] <Object>]
     [[-maxIntSize] <Object>] [[-minByteArrLen] <Object>] [[-maxByteArrLen] <Object>] [[-Procedure] <Object>]
-    [[-Blacklist] <Object>] [[-FuzzerType] <String>] [[-DbgHelpPath] <String>] [<CommonParameters>]
+    [[-Blacklist] <Object>] [[-FuzzerType] <String>] [[-DbgHelpPath] <String>] [-NoSpecialChars] [<CommonParameters>]
 
 OPTIONS
     -DataFile               The path to rpcServerData.json (path can also be piped)
@@ -22,6 +22,7 @@ OPTIONS
     -OutPath                Path to export fuzzing data to
     -InputParameters        Parse complex type parameters to the fuzzer (see examples below)
     -StringInput            Parse your own value for string parameters (for example a existing file)
+    -NoSpecialChars         Do not include special characters in random strings (prevent NAME INVALID)
     -intInput               Parse your own int32 value for integer values
     -guidInput              Parse your own guid value for guid values
     -minStrLen              The minimal length for a string when generating fuzz data (default 5)
@@ -106,4 +107,9 @@ Specify your own integer and guid as parameters for fuzzing input
 ```powershell
 $myguid = New-Guid
 PS '.\output\rpcServerData.json' | Invoke-RpcFuzzer -outpath .\output\ -Procedure EdpRpcRmsDecontainerizeFile -intInput 1337 -guidInput $myguid
+```
+
+Sometimes, string input without special characters can help to get more results. For example when you see `NAME INVALID` within Process Monitor for `CreateFile` operations. To prevent this, we can use the `-NoSpecialChars` switch.
+```powershell
+'.\output\rpcServerData.json' | Invoke-RpcFuzzer -OutPath .\output\ -NoSpecialChars
 ```

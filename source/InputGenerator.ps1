@@ -44,7 +44,11 @@ function GenerateInput {
     $newData = @()
     # Create a function for this that takes parameters for minimum/maximum length of String
     if ($paramType -eq [System.String]) {
-        $characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()~-=+?><,.;][{}_|"
+        if ($NoSpecialChars) {
+            $characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        } else {
+            $characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()~-=+?><,;][{}_|"
+        }        
         for ($i = 0; $i -lt $count; $i++) {
             $stringLength = Get-Random -Minimum $minStrLen -Maximum $maxStrLen
             $randomString = -join (Get-Random -InputObject $characters.ToCharArray() -Count $stringLength)

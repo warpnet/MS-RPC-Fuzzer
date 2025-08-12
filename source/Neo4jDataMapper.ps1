@@ -451,6 +451,12 @@ function Add-FunctionCallToAllowedInput {
         $AccessOptions = $matches[1].Trim()
     }
 
+    # If no manual string input was parsed, we probably want to remove the '.'
+    # This do prevent Process Monitor and Fuzzing input not being able to compare (because for some function calls, services add a extension)
+    if (-not $StringInput) {
+        $fuzzinput = ($fuzzinput -split '\.')[0]
+    }
+
     # Also check for high privileged file operations without impersonation
     if ($Operation -match "file" -and $user -match "NT AUTHORITY" -and $impersonating -eq "No impersonation") {
         $cypher = @"

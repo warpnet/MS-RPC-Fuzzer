@@ -65,7 +65,8 @@ function Invoke-RpcFuzzer {
         $Blacklist,
         [ValidateSet("default", "sorted")]
         [string]$FuzzerType,
-        [string]$DbgHelpPath
+        [string]$DbgHelpPath,
+        [switch]$NoSpecialChars
     )
     $rpcServerData = $DataFile
 
