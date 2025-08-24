@@ -38,7 +38,8 @@ function Get-RpcServerData {
         [string]$DbgHelpPath,
         [Parameter(Mandatory=$true)]
         [string]$OutPath,
-        [switch]$getParameters
+        [switch]$getParameters,
+        [switch]$RemotelyAccessibleOnly
     )
     begin {
         # Initialize DbgHelp DLL
@@ -177,19 +178,26 @@ function Get-RpcServerData {
                             # Handle connection issues
                             Write-Verbose "[!] Could not connect to RPC client for endpoint: $endpoint"
                         }
-                    } elseif ($endpoint -eq "no-endpoint-found" -and $Mode -eq "remote") {
+                    } elseif ($endpoint -eq "no-endpoint-found" -or $RemotelyAccessibleOnly) {
                         # Still no endpoint found but the mode is remote? Then just see if we can connect to it using random named pipes (works for example with PetitPotam)
-                        $pipeNames = (Get-ChildItem \\.\pipe\) | Where-Object { $_.Name -match '^[a-zA-Z0-9]+$' } | Select-Object -ExpandProperty Name
+                        $pipeNames = (Get-ChildItem \\.\pipe\) | Where-Object { $_.Name -match '^[a-zA-Z0-9_]+$' } | Select-Object -ExpandProperty Name
 
                         foreach ($name in $pipeNames) {
                             try {
-                                $connResult = Connect-RpcClient $client `
-                                    -StringBinding "ncacn_np:127.0.0.1[\\pipe\\$name]" `
+                                $StringBinding = "ncacn_np:127.0.0.1[\\pipe\\$name]"
+                                Connect-RpcClient $client `
+                                    -StringBinding $StringBinding `
                                     -AuthenticationLevel PacketPrivacy `
                                     -AuthenticationType WinNT `
                                     -ErrorAction Stop
                                     # No error? Connected!
+
+                                if ($client.Connected) {
+                                    if ($stringBindings -notcontains $stringbinding) {
+                                        $stringBindings += $stringbinding
+                                    }
                                     break
+                                }
                             } catch {
                                 # Silently continue
                             }
@@ -220,10 +228,40 @@ function Get-RpcServerData {
             }
 
             # Add the interface data under the server name
-            $serverData[$rpcServerName] += [PSCustomObject]@{
+            try {
+                $serverData[$rpcServerName] += [PSCustomObject]@{
                 InterfaceId   = $rpcInt.InterfaceId
                 StringBindings = $stringBindings
                 Procedures = $procDef
+                }
+            } catch {
+                # Silently continue
+            }
+
+            
+            # If user used the -RemotelyAccessibleOnly switch, only store the RPC servers that are remotely accessible.
+            if ($RemotelyAccessibleOnly) {
+                $remoteProtocols = @("ncacn_np","ncacn_ip_tcp")
+                $filteredServerData = @{}
+
+                foreach ($srv in $serverData.Keys) {
+                    $remoteIfaces = foreach ($iface in $serverData[$srv]) {
+                        if ($iface.StringBindings -match ($remoteProtocols -join "|")) {
+                            # Keep only the remote bindings
+                            [PSCustomObject]@{
+                                InterfaceId    = $iface.InterfaceId
+                                StringBindings = $iface.StringBindings | Where-Object { $_ -match ($remoteProtocols -join "|") }
+                                Procedures     = $iface.Procedures
+                            }
+                        }
+                    }
+
+                    if ($remoteIfaces) {
+                        $filteredServerData[$srv] = $remoteIfaces
+                    }
+                }
+
+                $serverData = $filteredServerData
             }
 
         }
