@@ -11,7 +11,8 @@ SYNTAX
     [[-canary] <String>] [[-OutPath] <String>] [[-StringInput] <String>] [[-intInput] <Int32>] [[-guidInput] <Guid>]
     [[-inputParameters] <Object>] [[-minStrLen] <Object>] [[-maxStrLen] <Object>] [[-minIntSize] <Object>]
     [[-maxIntSize] <Object>] [[-minByteArrLen] <Object>] [[-maxByteArrLen] <Object>] [[-Procedure] <Object>]
-    [[-Blacklist] <Object>] [[-FuzzerType] <String>] [[-DbgHelpPath] <String>] [-NoSpecialChars] [<CommonParameters>]
+    [[-Blacklist] <Object>] [[-FuzzerType] <String>] [[-DbgHelpPath] <String>] [-NoSpecialChars]
+    [[-Sleep] <Int32>] [<CommonParameters>]
 
 OPTIONS
     -DataFile               The path to rpcServerData.json (path can also be piped)
@@ -35,6 +36,7 @@ OPTIONS
     -Blacklist              Specify blacklisted procedures (fuzzer will not invoke these procedures)
     -FuzzerType             Choose between default and sorted
     -DbgHelpPath            The path to dbghelp.dll for symbols
+    -Sleep                  Time in seconds to wait before invoking the next RPC call
 ```
 
 ## Examples
