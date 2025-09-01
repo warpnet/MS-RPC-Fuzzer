@@ -66,7 +66,8 @@ function Invoke-RpcFuzzer {
         [ValidateSet("default", "sorted")]
         [string]$FuzzerType,
         [string]$DbgHelpPath,
-        [switch]$NoSpecialChars
+        [switch]$NoSpecialChars,
+        [int]$Sleep
     )
     $rpcServerData = $DataFile
 

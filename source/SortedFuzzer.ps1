@@ -230,6 +230,11 @@ function Invoke-SortedFuzzer {
                                     $logFilePath = "$OutPath\log.txt"
                                     $logEntry | Out-File -FilePath $logFilePath -Append -Encoding utf8
 
+                                    # If a sleep value is specified, wait for that amount of seconds before making the next call
+                                    if ($sleep) {
+                                        Sleep($sleep)
+                                    }
+
                                     # Make the call
                                     $result = $Method.Invoke($Client, $invokeParams)
                                 } else {
