@@ -150,15 +150,8 @@ function Invoke-SortedFuzzer {
             # Loop over all stringbindings for the RPC interface
             foreach ($stringbinding in $stringBindings) {
                 # Connect the RPC client
-                try {
-                    Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
-                } catch {
-                    try {
-                        Connect-RpcClient -client $client -stringBinding $stringbinding
-                    } catch {
-                        Write-Verbose "[!] Could not connect client to $stringbinding : $_"
-                    }
-                }
+                Connect-Client -client $client -stringbinding $stringbinding
+                
                 # Get methods for the RPC interface
                 if ($Procedure) {
                     # User only wants to fuzz one specific procedure
@@ -224,7 +217,7 @@ function Invoke-SortedFuzzer {
                                 $invokeParams = $params | ForEach-Object { $_.Value }
 
                                 # Check if procedure in blacklist, if so do not execute
-                                if ($Blacklist -notcontains $ProcedureName) {
+                                if ($Blacklist -notcontains $ProcedureName -and $ProcedureName -notmatch "close") {
                                     # Log before making the RPC call
                                     $logEntry = "RPCserver: $rpcServerName `nInterface: $RpcInterface `nProcedure: $procedureName`nParams: $inputResult`n------------------------`n"
                                     $logFilePath = "$OutPath\log.txt"
@@ -310,6 +303,43 @@ function Invoke-SortedFuzzer {
                                                                     -Service $service `
                                                                     -FuzzInput $inputResult `
                                                                     -OutPath $OutPath `
+                                } elseif ($_ -match "not connected") {
+                                    # Try to reconnect the RPC client
+                                    Connect-Client -client $client -stringbinding $stringbinding
+
+                                    # Also write error message to results
+                                    $Errormessage = $_ -replace '"', ''
+                                    $Endpoint =  $Client.Endpoint.ToString()
+                                    $Endpoint = $Endpoint.replace("\u", "*u")
+                                    Export-ErrorFuzzedInput -MethodName $methodName `
+                                                            -RpcServerName $rpcServerName `
+                                                            -RpcInterface $Client.InterfaceId.Uuid `
+                                                            -Endpoint $Endpoint `
+                                                            -ProcedureName $procedureName `
+                                                            -MethodDefinition $methodDefinition `
+                                                            -Service $service `
+                                                            -FuzzInput $inputResult `
+                                                            -Errormessage $Errormessage `
+                                                            -OutPath $OutPath `                                    
+                                } elseif ($_ -match "pipe is in the disconnected state") {
+                                    # Disconnect client and reconnect
+                                    Disconnect-RpcClient $client
+                                    Connect-Client -client $client -stringbinding $stringbinding
+
+                                    # Also write error message to results
+                                    $Errormessage = $_ -replace '"', ''
+                                    $Endpoint =  $Client.Endpoint.ToString()
+                                    $Endpoint = $Endpoint.replace("\u", "*u")
+                                    Export-ErrorFuzzedInput -MethodName $methodName `
+                                                            -RpcServerName $rpcServerName `
+                                                            -RpcInterface $Client.InterfaceId.Uuid `
+                                                            -Endpoint $Endpoint `
+                                                            -ProcedureName $procedureName `
+                                                            -MethodDefinition $methodDefinition `
+                                                            -Service $service `
+                                                            -FuzzInput $inputResult `
+                                                            -Errormessage $Errormessage `
+                                                            -OutPath $OutPath `                                    
                                 } else {
                                     # Error is not access denied, so we assume our input caused the server to send a error
                                     $Errormessage = $_ -replace '"', ''
@@ -332,7 +362,11 @@ function Invoke-SortedFuzzer {
                         Write-Verbose "[!] Failed to invoke method $($Method.Name) on client $($Client.Endpoint)"
                     }
                 }
-                Disconnect-RpcClient $client
+                try {
+                    Disconnect-RpcClient $client
+                } catch {
+                    Write-Verbose "[!] RPC client already disconnected for $($Client.Endpoint)"
+                }
             }
             # Clear the list of stored parameters for the current interface after all stringbindings are fuzzed
             # This ensures that complex parameters are specific to each interface.
@@ -341,4 +375,30 @@ function Invoke-SortedFuzzer {
     }
     Write-Host "[+] Completed fuzzing" -ForegroundColor Green
     Write-Host "[+] To load data into Neo4j use: '.\output\Allowed.json' | Import-DatatoNeo4j -Neo4jHost '127.0.0.1:7474' -Neo4jUsername 'neo4j'" -ForegroundColor Green
+}
+
+<#
+.SYNOPSIS
+Connect the RPC client with a string binding
+.DESCRIPTION
+This function connects a RPC client to a string binding
+.PARAMETER Client
+The RPC client to connect
+.PARAMETER stringBinding
+The string binding to connect the RPC client to
+#>
+function Connect-Client {
+    param (
+        $client,
+        $stringBinding
+    )
+    try {
+        Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
+    } catch {
+        try {
+            Connect-RpcClient -client $client -stringBinding $stringbinding
+        } catch {
+            Write-Verbose "[!] Could not connect client to $stringbinding : $_"
+        }
+    }
 }

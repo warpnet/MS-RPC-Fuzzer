@@ -167,7 +167,12 @@ function Get-RpcServerData {
             foreach ($endpoint in $endpoints) {
                 try {
                     $client = Get-RpcClient $rpcInt
-
+                    
+                    # Check if it's a 'ncacn_ip_tcp' endpoint and try to connect
+                    if ($endpoint -match 'ncacn_ip_tcp') {
+                        $stringBindings += $endpoint
+                    }
+                    
                     # Check if it's a 'ncacn_np' endpoint and try to connect
                     if ($endpoint -match 'ncacn_np') {
                         try {
@@ -182,7 +187,7 @@ function Get-RpcServerData {
                         # Still no endpoint found but the mode is remote? Then just see if we can connect to it using random named pipes (works for example with PetitPotam)
                         $pipeNames = (Get-ChildItem \\.\pipe\) | Where-Object { $_.Name -match '^[a-zA-Z0-9_]+$' } | Select-Object -ExpandProperty Name
 
-                        foreach ($name in $pipeNames) {
+                        foreach ($name in $pipeNames | Where-Object { $_ -ne "MGMTAPI" }) {
                             try {
                                 $StringBinding = "ncacn_np:127.0.0.1[\\pipe\\$name]"
                                 Connect-RpcClient $client `
