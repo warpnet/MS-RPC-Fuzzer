@@ -105,7 +105,7 @@ Function Format-ParameterType {
     )
 
     # Process each parameter
-    process {
+    process {  
         # Is parameter type an Byte Array?
         if ($Type -eq [System.Byte[]]) {
             $value = CallInputGenerator -param $Type -canary $Canary -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen
@@ -113,8 +113,15 @@ Function Format-ParameterType {
         }
         # Is param type an Array?
         elseif ($Type.IsArray) {
-            # [Recursive] Array
-            return ,@(Format-ParameterType $Type.GetElementType())
+            # Recursively get the element type value
+            $elementType = $Type.GetElementType()
+            $elementValue = Format-SortedParameterType -Type $elementType -Canary $Canary -Mode $Mode -remote_host $remote_host -inputParameters $inputParameters -StringInput $StringInput -IntInput $IntInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -InterfaceComplexParameters $InterfaceComplexParameters
+
+            # Create a strongly typed array of the correct element type
+            $typedArray = [System.Array]::CreateInstance($elementType, 1)
+            $typedArray.SetValue($elementValue, 0)
+
+            return ,$typedArray
         } 
         # Is param type an String?
         elseif ($Type -eq [System.String]) {
@@ -257,16 +264,21 @@ Function Format-SortedParameterType {
 
     # Process each parameter
     process {
-        # Is parameter type an Byte Array?
         if ($Type -eq [System.Byte[]]) {
             $value = CallInputGenerator -param $Type -canary $Canary -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen
             return ,$value
-        }
+        }       
         # Is param type an Array?
         elseif ($Type.IsArray) {
-            # [Recursive] Array
-            # When recursively calling, ensure InterfaceComplexParameters is passed down
-            return ,@(Format-SortedParameterType -Type $Type.GetElementType() -Canary $Canary -Mode $Mode -remote_host $remote_host -inputParameters $inputParameters -StringInput $StringInput -IntInput $intInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -InterfaceComplexParameters $InterfaceComplexParameters)
+            # Recursively get the element type value
+            $elementType = $Type.GetElementType()
+            $elementValue = Format-SortedParameterType -Type $elementType -Canary $Canary -Mode $Mode -remote_host $remote_host -inputParameters $inputParameters -StringInput $StringInput -IntInput $IntInput -GuidInput $GuidInput -minStrLen $minStrLen -maxStrLen $maxStrLen -minIntSize $minIntSize -maxIntSize $maxIntSize -minByteArrLen $minByteArrLen -maxByteArrLen $maxByteArrLen -InterfaceComplexParameters $InterfaceComplexParameters
+
+            # Create a strongly typed array of the correct element type
+            $typedArray = [System.Array]::CreateInstance($elementType, 1)
+            $typedArray.SetValue($elementValue, 0)
+
+            return ,$typedArray
         # Is param type an String?
         } elseif ($Type -eq [System.String]) {
             if ($StringInput) {
@@ -391,29 +403,30 @@ function CallInputGenerator {
 
 <#
 .SYNOPSIS
-Connect a client using a stringbinding
+Connect the RPC client with a string binding
 .DESCRIPTION
-This function connects a client using a stringbinding
+This function connects a RPC client to a string binding
+.PARAMETER Client
+The RPC client to connect
+.PARAMETER stringBinding
+The string binding to connect the RPC client to
 #>
-function ConnectRpcClient {
+function Connect-Client {
     param (
         $client,
-        $stringbinding
-    )    
-    # Connect to the RPC server using the provided stringbinding
+        $stringBinding
+    )
     try {
-        if ($stringbinding -match "ncacn_np") {
-            try {
-                Connect-RpcClient $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
-            } catch {
-                if ($_ -match "AuthenticationTypeNotRecognized") {
-                    Connect-RpcClient $client -stringBinding $stringbinding
-                }
-            }
-        } else {
-            Connect-RpcClient $client -stringBinding $stringbinding
-        }
+        Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
     } catch {
-        Write-Verbose "[!] Error connecting client : $_"
+        try {
+            Connect-RpcClient -client $client -stringBinding $stringbinding
+        } catch {
+            try {
+                Connect-RpcClient -client $client
+            } catch {
+                Write-Verbose "[!] Could not connect client to $stringbinding : $_"
+            }
+        }
     }
 }

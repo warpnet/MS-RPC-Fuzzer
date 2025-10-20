@@ -217,7 +217,7 @@ function Invoke-SortedFuzzer {
                                 $invokeParams = $params | ForEach-Object { $_.Value }
 
                                 # Check if procedure in blacklist, if so do not execute
-                                if ($Blacklist -notcontains $ProcedureName -and $ProcedureName -notmatch "close") {
+                                if ($Blacklist -notcontains $ProcedureName -and $ProcedureName -notmatch "close" -and $ProcedureName -notmatch "delete") {
                                     # Log before making the RPC call
                                     $logEntry = "RPCserver: $rpcServerName `nInterface: $RpcInterface `nProcedure: $procedureName`nParams: $inputResult`n------------------------`n"
                                     $logFilePath = "$OutPath\log.txt"
@@ -375,30 +375,4 @@ function Invoke-SortedFuzzer {
     }
     Write-Host "[+] Completed fuzzing" -ForegroundColor Green
     Write-Host "[+] To load data into Neo4j use: '.\output\Allowed.json' | Import-DatatoNeo4j -Neo4jHost '127.0.0.1:7474' -Neo4jUsername 'neo4j'" -ForegroundColor Green
-}
-
-<#
-.SYNOPSIS
-Connect the RPC client with a string binding
-.DESCRIPTION
-This function connects a RPC client to a string binding
-.PARAMETER Client
-The RPC client to connect
-.PARAMETER stringBinding
-The string binding to connect the RPC client to
-#>
-function Connect-Client {
-    param (
-        $client,
-        $stringBinding
-    )
-    try {
-        Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
-    } catch {
-        try {
-            Connect-RpcClient -client $client -stringBinding $stringbinding
-        } catch {
-            Write-Verbose "[!] Could not connect client to $stringbinding : $_"
-        }
-    }
 }

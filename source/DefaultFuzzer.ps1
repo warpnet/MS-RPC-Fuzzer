@@ -343,29 +343,3 @@ function Invoke-DefaultFuzzer {
     Write-Host "[+] Completed fuzzing" -ForegroundColor Green
     Write-Host "[+] To load data into Neo4j use: '.\output\Allowed.json' | Import-DatatoNeo4j -Neo4jHost '127.0.0.1:7474' -Neo4jUsername 'neo4j'" -ForegroundColor Green
 }
-
-<#
-.SYNOPSIS
-Connect the RPC client with a string binding
-.DESCRIPTION
-This function connects a RPC client to a string binding
-.PARAMETER Client
-The RPC client to connect
-.PARAMETER stringBinding
-The string binding to connect the RPC client to
-#>
-function Connect-Client {
-    param (
-        $client,
-        $stringBinding
-    )
-    try {
-        Connect-RpcClient -client $client -stringBinding $stringbinding -AuthenticationLevel PacketPrivacy -AuthenticationType WinNT
-    } catch {
-        try {
-            Connect-RpcClient -client $client -stringBinding $stringbinding
-        } catch {
-            Write-Verbose "[!] Could not connect client to $stringbinding : $_"
-        }
-    }
-}
